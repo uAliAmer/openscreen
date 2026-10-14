@@ -205,6 +205,7 @@ libre, et les erreurs pointent ainsi les lignes que l'agent a écrites.
 |---|---|---|
 | `frame(uv)` | `vec4<f32>` | L'image composée en ce point (D.1 dit ce qu'elle contient). Échantillonnage bilinéaire, bords répétés. |
 | `ctx.resolution` | `vec2<f32>` | Taille de la sortie, en px. |
+| `ctx.aspect` | `f32` | Largeur sur hauteur de la sortie, pour les distances circulaires en uv. |
 | `ctx.time` | `f32` | Secondes de programme, continues à travers coupes, clips et vitesses. |
 | `ctx.region` | `vec4<f32>` | x : progression de 0 à 1 sur la pilule entière. y : sa durée en s. z : secondes depuis son début. |
 | `ctx.cursor` | `vec4<f32>` | xy : la pointe en uv de sortie. z : 1 si elle est à l'écran. |
@@ -328,9 +329,13 @@ refusé parce que la machine qui l'écrit est modeste.
 | Lourd | ≤ 128 | gros flou, bokeh | Sur des régions courtes : une transition, un moment fort. |
 | Très lourd | au-delà | raymarching, simulations | Quelques secondes. L'export reste juste, mais plus lent ; la preview peut ralentir sur un petit GPU. |
 
-- **Les seuils sont à calibrer à la PR 1,** en ms mesurées sur le GPU intégré de référence (le
-  Radeon 610M des mesures Linux) et sur la RTX du spike. La description de l'outil les donne
-  ensuite en ms, pour que l'agent raisonne en temps et non en lectures.
+- **Mesuré sur la RTX 4070 Ti** (`shader_fx_tier_calibration`) : environ 4 µs par lecture en
+  1080p et 17 µs en 4K, au-dessus d'un fixe de 0,03 ms. Un effet léger coûte au plus 0,06 ms par
+  frame en 1080p, un moyen 0,14 ms, un lourd 0,54 ms, 512 lectures 2,1 ms. Le détail est dans
+  [rendering-performance.md](../technical-documentation/engineering/rendering-performance.md).
+- **Le GPU intégré de référence** (le Radeon 610M des mesures Linux) reste à mesurer : on y attend
+  plusieurs fois ces coûts. La description de l'outil donnera les paliers en ms sur les deux
+  machines, pour que l'agent raisonne en temps et non en lectures.
 - **Plusieurs effets au même instant s'additionnent.** Le retour d'un outil donne le palier de
   l'effet, et le palier cumulé du moment le plus chargé de sa région.
 - **Rien n'est refusé au coût.** Le palier et sa recommandation reviennent à l'agent (E.3), qui

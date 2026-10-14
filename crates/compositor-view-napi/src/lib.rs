@@ -388,6 +388,35 @@ pub fn set_active_clip(
     }
 }
 
+/// Ce que l'outil de l'agent apprend d'un effet avant de l'accepter (`docs/shader-effects.md`, E.3).
+#[napi(object)]
+pub struct ShaderEffectCheck {
+    /// L'erreur telle que l'agent doit la lire (ligne, colonne, extrait), ou `None` s'il est accepté.
+    pub error: Option<String>,
+    /// Le palier de coût : "light", "medium", "heavy" ou "very-heavy". Indicatif, jamais un refus.
+    pub tier: Option<String>,
+    /// Lectures de `frame()` par pixel, boucles multipliées par leur borne.
+    pub frame_reads: Option<f64>,
+    /// Itérations de boucle par pixel.
+    pub iterations: Option<f64>,
+}
+
+/// Vérifie le WGSL d'un effet shader : validation, bornes des boucles, compilation réelle pour le
+/// backend de la machine quand elle existe (FXC sur Windows), et palier de coût. `params_json` :
+/// les paramètres déclarés, `[{ "name": "strength", "type": "number" }, …]`.
+#[napi]
+pub fn check_shader_effect(code: String, params_json: String) -> ShaderEffectCheck {
+    match openscreen_compositor::shader_fx::check_for_agent_json(&code, &params_json) {
+        Ok(report) => ShaderEffectCheck {
+            error: None,
+            tier: Some(report.tier.name().to_string()),
+            frame_reads: Some(report.frame_reads as f64),
+            iterations: Some(report.iterations as f64),
+        },
+        Err(error) => ShaderEffectCheck { error: Some(error), tier: None, frame_reads: None, iterations: None },
+    }
+}
+
 /// Installe la scène de l'app (JSON `SceneDescription`) sur la vue : layout preset piloté par
 /// l'app au lieu de la fixture. JSON invalide → ignoré côté natif.
 #[napi]

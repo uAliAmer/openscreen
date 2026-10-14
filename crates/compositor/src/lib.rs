@@ -47,6 +47,8 @@ pub mod prism_mesh;
 pub mod remux;
 pub mod scene;
 pub mod sculpt;
+// Effets shader écrits par un agent (docs/shader-effects.md) : WGSL -> naga -> backend.
+pub mod shader_fx;
 // Segmentation du sujet webcam (masque -> `t3`). Le module compile toujours ; sans la feature
 // `segmentation` ses deux entrées échouent proprement, ce qui garde le reste du crate
 // indépendant du choix de packaging d'ONNX Runtime.
